@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import io from 'socket.io-client';
 
 import { makeStyles, Paper } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 
-import queryString from 'query-string';
-import io from "socket.io-client";
+import { getFromStorage } from '../utils/storage';
+import { showError } from '../utils/notification';
+import { joinToRoom } from '../redux/actions/joinToRoom';
+
 import ChatBar from './chatBar';
 import Messages from './messages';
 
-// Custom Styles
+// Definitions
 const useStyles = makeStyles({
     root: {
         height: '100vh'
@@ -38,7 +42,8 @@ const useStyles = makeStyles({
 
 let socket;
 
-const Chat = ({ location }) => {
+// Component
+const Chat = (props) => {
     const [name, setName] = useState('');
     const [room, setRoom] = useState('');
     const [users, setUsers] = useState([]);
@@ -50,21 +55,34 @@ const Chat = ({ location }) => {
     const endpoint = 'localhost:5000';
 
     useEffect(() => {
-        const { name, room } = queryString.parse(location.search);
+        const user = getFromStorage('currentUser');
+
+        const name = user ? user.name : props.name;
+        const room = user ? user.room : props.room;
+
+        if (!name || !room) {
+            props.history.push('/');
+        }
+
+        setName(name);
+        setRoom(room);
 
         socket = io(endpoint);
 
-        setRoom(room);
-        setName(name)
-
-        socket.emit('join', { name, room }, (error) => {
+        socket.emit('join', { name: name, room: room }, (error) => {
             if (error) {
-                alert(error);
+                props.history.push('/');
+                //remove user
+                showError(error);
+                return;
             }
+
         });
-    }, [endpoint, location.search]);
+
+    }, [endpoint, props]);
 
     useEffect(() => {
+
         socket.on('message', message => {
             setMessages(messages => [...messages, message]);
         });
@@ -73,6 +91,12 @@ const Chat = ({ location }) => {
             console.log(users);
             setUsers(users);
         });
+
+        return () => {
+            socket.removeListener('message');
+            socket.removeListener('roomData');
+        }
+
     }, []);
 
     /**
@@ -107,6 +131,19 @@ const Chat = ({ location }) => {
             </Grid>
         </div>
     );
+
 };
 
-export default Chat;
+const mapStateToProps = (state) => ({
+    name: state.name,
+    room: state.room
+});
+const mapDispatchToProps = dispatch => {
+    return {
+        joinToRoom: (user) => dispatch(joinToRoom(user))
+    }
+}
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Chat);
