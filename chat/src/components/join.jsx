@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import { showError } from '../utils/notification'
+import { setInStorage } from '../utils/storage';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -7,9 +9,10 @@ import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
-import { Link } from 'react-router-dom';
+import { joinToRoom } from '../redux/actions/joinToRoom';
+import { connect } from 'react-redux';
 
-// Custom Styles
+// Definitions
 const useStyles = makeStyles({
     root: {
         height: '100vh'
@@ -31,10 +34,28 @@ const useStyles = makeStyles({
     }
 });
 
-const Join = () => {
+// Component
+const Join = (props) => {
     const [user, setUser] = useState('');
     const [room, setRoom] = useState('');
+
     const classes = useStyles();
+
+    const signIn = (event) => {
+        event.preventDefault();
+
+        if (!user || !room) {
+            showError(`The user and room values mustn't be empty.`);
+            return;
+        }
+
+        props.joinToRoom({ name: user, room: room });
+
+        setInStorage('currentUser', { name: user, room: room });
+
+        props.history.push('/chat');
+    }
+
     return (
         <div>
             <Grid className={classes.root}
@@ -65,9 +86,7 @@ const Join = () => {
                     </CardContent>
                     <CardActions>
                         <Grid container direction="row" justify="center" alignItems="center">
-                            <Link className={classes.itemCard} onClick={e => (!user || !room) ? e.preventDefault() : null} to={`/chat?name=${user}&room=${room}`}>
-                                <Button className={classes.fullWidth} variant="contained" color="primary" type="submit">Sign In</Button>
-                            </Link>
+                            <Button className={classes.fullWidth} variant="contained" color="primary" type="submit" onClick={signIn}>Sign In</Button>
                         </Grid>
                     </CardActions>
                 </Card>
@@ -76,4 +95,12 @@ const Join = () => {
     );
 }
 
-export default Join;
+const mapDispatchToProps = dispatch => {
+    return {
+        joinToRoom: (user) => dispatch(joinToRoom(user))
+    }
+}
+export default connect(
+    null,
+    mapDispatchToProps
+)(Join);
