@@ -4,14 +4,14 @@ import io from 'socket.io-client';
 
 import { makeStyles, Paper } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
 
-import { getFromStorage } from '../utils/storage';
+import { getFromStorage, removeFromStorage } from '../utils/storage';
 import { showError } from '../utils/notification';
 import { joinToRoom } from '../redux/actions/joinToRoom';
 
 import ChatBar from './chatBar';
 import Messages from './messages';
+import ChatInput from './chatInput';
 
 // Definitions
 const useStyles = makeStyles({
@@ -26,14 +26,11 @@ const useStyles = makeStyles({
         height: '100%',
         margin: '0 15px'
     },
+    toolBar: {
+        padding: '0 15px'
+    },
     fullWidth: {
         width: '100%'
-    },
-    chatInput: {
-        position: 'absolute',
-        width: '100%',
-        top: 'auto',
-        bottom: 0
     },
     margin_0: {
         margin: '0 0'
@@ -112,21 +109,26 @@ const Chat = (props) => {
         }
     }
 
+    const closeChat = (event) => {
+        event.preventDefault();
+        socket.disconnect();
+        removeFromStorage('currentUser');
+        props.history.push('/');
+    }
+
     return (
         <div>
             <Grid container direction="row" justify="center" alignItems="center" className={classes.root}>
                 <Paper elevation={3} className={classes.chatContainer}>
-                    <ChatBar room={room} users={users} classes={classes} />
-                    <Messages messages={messages} name={name} />
-                    <TextField
-                        id="input-message"
-                        className={classes.chatInput}
-                        label="Message"
-                        value={message}
-                        onChange={(event) => setMessage(event.target.value)}
-                        onKeyPress={(event) => event.key === 'Enter' ? sendMessage(event) : null}
-                        variant="filled"
-                    />
+                    <ChatBar room={room} users={users} classes={classes} onCloseChat={(event) => closeChat(event)} />
+                    <Grid container direction="row" justify="center" alignItems="center" style={{ width: '100%' }}>
+                        <Grid container item xs={12}>
+                            <Messages messages={messages} name={name} />
+                            <ChatInput message={message}
+                                onMessageChange={(event) => setMessage(event.target.value)}
+                                onSendMessage={(event) => sendMessage(event)} />
+                        </Grid>
+                    </Grid>
                 </Paper>
             </Grid>
         </div>

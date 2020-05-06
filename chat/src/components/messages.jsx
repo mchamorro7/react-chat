@@ -3,7 +3,7 @@ import ScrollToBottom from 'react-scroll-to-bottom';
 import Message from './message';
 import { makeStyles } from '@material-ui/core';
 
-// Custom Styles
+// Definitions
 const useStyles = makeStyles({
     messagesContainer: {
         position: 'absolute',
@@ -15,6 +15,7 @@ const useStyles = makeStyles({
     },
 });
 
+// Component
 const Messages = ({ messages, name }) => {
     const classes = useStyles();
 
