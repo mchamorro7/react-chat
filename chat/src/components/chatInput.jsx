@@ -50,16 +50,6 @@ const ChatInput = (props) => {
                 <Icon className={classes.sendIcon}>send</Icon>
             </IconButton>
         </Paper>
-
-        /* <TextField
-            id="input-message"
-            className={classes.chatTextField}
-            label="Message"
-            value={props.message}
-            onChange={(event) => props.onMessageChange(event)}
-            onKeyPress={(event) => (event.key === 'Enter' ? props.onSendMessage(event) : null)}
-            variant="filled"
-        />*/
     );
 };
 

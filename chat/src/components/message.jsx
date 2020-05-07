@@ -3,7 +3,7 @@ import ReactEmoji from 'react-emoji';
 
 import { makeStyles, Grid, Paper } from '@material-ui/core';
 
-// Custom Styles
+// Definitions
 const useStyles = makeStyles({
     messageContainer: {
         margin: '0.5em 0.5em',
@@ -29,6 +29,7 @@ const useStyles = makeStyles({
     }
 });
 
+// Component
 const Message = ({ message: { text, user }, name }) => {
     const classes = useStyles();
 

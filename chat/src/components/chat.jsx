@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import io from 'socket.io-client';
 
-import { makeStyles, Paper } from '@material-ui/core';
+import { makeStyles, Paper, Backdrop, CircularProgress } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 
 import { getFromStorage, removeFromStorage } from '../utils/storage';
@@ -14,7 +14,11 @@ import Messages from './messages';
 import ChatInput from './chatInput';
 
 // Definitions
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
     root: {
         height: '100vh'
     },
@@ -35,7 +39,7 @@ const useStyles = makeStyles({
     margin_0: {
         margin: '0 0'
     }
-});
+}));
 
 let socket;
 
@@ -69,7 +73,6 @@ const Chat = (props) => {
         socket.emit('join', { name: name, room: room }, (error) => {
             if (error) {
                 props.history.push('/');
-                //remove user
                 showError(error);
                 return;
             }
@@ -85,7 +88,6 @@ const Chat = (props) => {
         });
 
         socket.on("roomData", ({ users }) => {
-            console.log(users);
             setUsers(users);
         });
 
@@ -109,6 +111,10 @@ const Chat = (props) => {
         }
     }
 
+    /**
+     * Disconnect from the room
+     * @param {*} event 
+     */
     const closeChat = (event) => {
         event.preventDefault();
         socket.disconnect();
@@ -118,6 +124,12 @@ const Chat = (props) => {
 
     return (
         <div>
+            {users.length === 0 ?
+                <Backdrop className={classes.backdrop} open={true}>
+                    <CircularProgress color="inherit" />
+                </Backdrop>
+                :
+                null}
             <Grid container direction="row" justify="center" alignItems="center" className={classes.root}>
                 <Paper elevation={3} className={classes.chatContainer}>
                     <ChatBar room={room} users={users} classes={classes} onCloseChat={(event) => closeChat(event)} />
