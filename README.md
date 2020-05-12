@@ -2,7 +2,7 @@
 
 ## To run application
 
-Run `npm start` on client/server root project directory.
+Run `npm start` on client project directory and server project directory.
 
 demo: https://reactjs-nodejs-chat.netlify.app/
 
